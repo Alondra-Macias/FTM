@@ -33,36 +33,14 @@
  * @brief   Application entry point.
  */
 
-#include "SPI.h"
-#include "GPIO.h"
-
-#include "LCD_nokia.h"
-#include "LCD_nokia_images.h"
 #include "stdint.h"
-#include "SPI.h"
-#include "Menu.h"
-#include "RGBmanual.h"
 #include "FlexTimer.h"
-
+#define MAX_COUNT 0xFF
 
 
 int main()
 {
 	SW_setup();
-	const spi_config_t g_spi_config = {
-								SPI_DISABLE_FIFO,
-								SPI_LOW_POLARITY,
-								SPI_LOW_PHASE,
-								SPI_MSB,
-								SPI_0,
-								SPI_MASTER,
-								GPIO_MUX2,
-								SPI_BAUD_RATE_2,
-								SPI_FSIZE_8,
-								{GPIO_D, BIT1, BIT2} };
-
-	SPI_init(&g_spi_config); /*! Configuration function for the LCD port*/
-	LCD_nokia_init(); /*! Configuration function for the LCD*/
 	const FTM_config_t g_ftm_config2 = {
 								FTM_0,
 								WP_DIS,
@@ -77,8 +55,7 @@ int main()
 
 while(1){
 
-	//menu_show();
-	 manual_main();
+
 }
 
 }
