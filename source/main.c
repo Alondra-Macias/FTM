@@ -36,7 +36,23 @@
 #include "stdint.h"
 #include "FlexTimer.h"
 #define MAX_COUNT 0xFF
+/*
+ * CPWMS MSnB(5):MsnA(4) ELSnB(3):ELSnA(2)
+1.output toogle on match
+0 01 01
+2.output compare set on match
+0 01 11
+3.output compare clear on match
+0 01 10
+4.output toogle on match 80%
+0 01 01
+5.Center aligned PWM mode, high
+1 XX 10
+6.complementary PWM signal
 
+7.input capture
+0 00 01
+ */
 
 int main()
 {
