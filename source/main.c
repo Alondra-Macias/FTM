@@ -35,39 +35,58 @@
 
 #include "stdint.h"
 #include "FlexTimer.h"
-#define MAX_COUNT 0xFF
-/*
- * CPWMS MSnB(5):MsnA(4) ELSnB(3):ELSnA(2)
-1.output toogle on match
-0 01 01
-2.output compare set on match
-0 01 11
-3.output compare clear on match
-0 01 10
-4.output toogle on match 80%
-0 01 01
-5.Center aligned PWM mode, high
-1 XX 10
-6.complementary PWM signal
+#include "GPIO.h"
+#include "Delay.h"
+#define MAX_COUNT_OUTPUT_TOGGL 0x04
+#define CHANNEL_VALUE 0x03
 
-7.input capture
-0 00 01
- */
 
 int main()
 {
-	SW_setup();
-	const FTM_config_t g_ftm_config2 = {
+
+
+
+	const FTM_config_t g_ftm_toggle_conf = {
 								FTM_0,
 								WP_DIS,
 								Canal_0,
-								MAX_COUNT,
-								MAX_COUNT/2,
-								FLEX_TIMER_MSB | FLEX_TIMER_ELSB,
+								MAX_COUNT_OUTPUT_TOGGL,  //count
+								CHANNEL_VALUE,    //CnV
+								FLEX_TIMER_MSA | FLEX_TIMER_ELSA,
 								FLEX_TIMER_CLKS_1,
-								FLEX_TIMER_PS_128
+								FLEX_TIMER_PS_2
 	};
-	FlexTimer_Init(&g_ftm_config2);
+
+
+	const FTM_config_t g_ftm_compSet_conf = {
+									FTM_0,
+									WP_DIS,
+									Canal_0,
+									41015u,  //count
+									CHANNEL_VALUE,    //CnV
+									FLEX_TIMER_MSA | FLEX_TIMER_ELSA | FLEX_TIMER_ELSB,
+									FLEX_TIMER_CLKS_1,
+									FLEX_TIMER_PS_128
+		};
+
+
+
+	const FTM_config_t g_ftm_compClear_conf = {
+										FTM_0,
+										WP_DIS,
+										Canal_0,
+										41015u,  //count
+										CHANNEL_VALUE,    //CnV
+										(FLEX_TIMER_MSA | FLEX_TIMER_ELSB) & ~FLEX_TIMER_ELSA,
+										FLEX_TIMER_CLKS_1,
+										FLEX_TIMER_PS_128
+			};
+		FlexTimer_Init(&g_ftm_toggle_conf);
+		delay(20000);
+		FlexTimer_Init(&g_ftm_compSet_conf);
+
+
+
 
 while(1){
 
