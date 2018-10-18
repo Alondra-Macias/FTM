@@ -205,4 +205,34 @@ void FlexTimer_Init(const FTM_config_t* FTM_Config)
 }
 
 
+void PWM_output_center_alignmen(void)
+{
+	/*Enable clocks for ports and Timer0*/
+	FTM_clk(FTM_0);
+	GPIO_clock_gating(GPIO_A);
+	GPIO_clock_gating(GPIO_B);
+	GPIO_clock_gating(GPIO_C);
+	GPIO_clock_gating(GPIO_D);
+	GPIO_clock_gating(GPIO_E);
+	FTM0->CONF |= FTM_CONF_BDMMODE(3);   //setup BDM in 11
+	FTM0->FMS = 0; 		//clear the WPEN so that WPDIS is set in FTM0_MODE reg
+	FTM0->MODE |= 0x05;		//enable write the ftm CnV register
+	FTM0->MOD = 1000;
+	FTM0->CONTROLS[0].CnSC = 0x28;		//Center-alignmnent, PWM begins with high
+	FTM0->CONTROLS[0].CnSC = 0x28;		//PWM waveform is high-low-high
+	FTM0->COMBINE = 0x02;		//complementary mode for CH0 & CH1 of FTM()
+	FTM0->COMBINE |= 0x10;		//dead timer insertion enabled in complementary mode for Ch0 & Ch1 of FTM
+	FTM0->DEADTIME = 0x1F;		//dead time is 16 system clock cycles
+	FTM0->CONTROLS[0].CnV = 500;
+	FTM0->CONTROLS[1].CnV = 500;
+	FTM0->CNTIN = 0x00;
+
+	FTM0->CONTROLS[2].CnSC = 0x28;
+	FTM0->CONTROLS[3].CnSC = 0x28;
+	FTM0->COMBINE |= 0x0200;
+	FTM0->COMBINE |= 0x1000;
+	FTM0->CONTROLS[3].CnV = 250;
+	FTM0->CONTROLS[3].CnV = 250;
+	FTM0->SC = 0x68;
+}
 
