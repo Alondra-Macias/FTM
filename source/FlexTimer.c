@@ -16,12 +16,12 @@
 uint16_t edge=0;
 uint32_t periodo;
 
-
-void FTM0_IRQHandler(void){
-	periodo=FTM0->CONTROLS[0].CnV-edge;
-	edge=FTM0->CONTROLS[0].CnV;
-
+void FTM0_ISR()
+{
+	FTM0->SC &= ~FLEX_TIMER_TOF;
+	GPIOD->PDOR ^= 0xFF;
 }
+
 
 
 
@@ -193,10 +193,14 @@ void FlexTimer_updateCHValue(sint16 channelValue)
 	FTM0->CONTROLS[0].CnV = channelValue;
 }
 void FlexTimer_Init(const FTM_config_t* FTM_Config)
-{	 	PORTC->PCR[1]   = PORT_PCR_MUX(0x4);
+{
+	 SIM->SCGC5 |= GPIO_CLOCK_GATING_PORTC;
+	PORTC->PCR[1]   = PORT_PCR_MUX(0x04);
+
 //2 salidas por asignar
 		FTM_clk(FTM_Config->FTM_channel);
 		FTM_write_protection_disable(FTM_Config->FTM_channel, FTM_Config->FTM_WP_DIS);
+		FTM0->CONF |= FTM_CONF_BDMMODE(3);
 		FTM_counter(FTM_Config->FTM_channel, FTM_Config->count);
 		FMT_mode_edge_level_selection(FTM_Config->FTM_channel,FTM_Config->FTM_canal, FTM_Config->mels);
 		FTM_duty_cycle_value(FTM_Config->FTM_channel,FTM_Config->FTM_canal, FTM_Config->channelValue);
@@ -234,34 +238,6 @@ void PWM_output_center_alignmen(void)
 	FTM0->CONTROLS[3].CnV = 250;
 	FTM0->CONTROLS[3].CnV = 250;
 	FTM0->SC = 0x68;
-}
-
-void PWM_phase_shift(void)
-{
-	/*Enable clocks for ports and Timer0*/
-	FTM_clk(FTM_0);
-	GPIO_clock_gating(GPIO_A);
-	GPIO_clock_gating(GPIO_B);
-	GPIO_clock_gating(GPIO_C);
-	GPIO_clock_gating(GPIO_D);
-	GPIO_clock_gating(GPIO_E);
-	FTM0->SC = 0x00;
-	FTM0->CONF = 0xC0;	//setup BDM in 11
-	FTM0->FMS = 0x00;		//clear the WPEN so that WPDIS is set in FTM0_MODE reg
-	FTM0->MODE |= 0x05;			//enable write the FTM CnV register
-	FTM0->MOD = 1000;
-	FTM0->CONTROLS[0].CnSC = 0x28;		//High-Low_high for combined and complementary mode
-	FTM0->CONTROLS[1].CnSC = 0x28;
-	FTM0->CONTROLS[2].CnSC = 0x28;
-	FTM0->CONTROLS[3].CnSC = 0x28;
-	FTM0->COMBINE = 0x0303;		//complementary and combined mode for CH0&CH1, CH2&CH3
-	FTM0->COMBINE |= 0x1010;	//dead timer insertion enabled in complementary mode for CH0&CH1
-
-	FTM0->DEADTIME = 0x1F;		//deadtime is 31 system clock cycles
-	FTM0->CONTROLS[1].CnV = 750;
-	FTM0->CONTROLS[0].CnV = 250;
-	FTM0->CNTIN = 0x00;
-	FTM0->CONTROLS[2].CnV = 500;
-	FTM0->CONTROLS[3].CnV = 1000;
-	FTM0->SC = 0x08;				//PWM edge_alignment, system clock driving, dividing by 1
+	
+	
 }
